@@ -72,3 +72,9 @@ if submitted:
     # תחזית מחיר
     pred = model.predict(X_input)[0]
     st.success(f"מחיר צפוי ללילה: ${pred:,.0f}")
+
+    # הצגת מיקום הנכס על גבי מפה
+    st.subheader("מיקום הנכס על גבי מפה:")
+    map_df = pd.DataFrame({'latitude': [latitude], 'longitude': [longitude]})
+    st.map(map_df)
+
