@@ -1,13 +1,19 @@
+import sys
 import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import joblib
 import pandas as pd
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+from utils.save_to_db import save_interaction
 import dotenv
 dotenv.load_dotenv()
 import openai
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 # טען את המודל
 MODEL_PATH = os.path.join("models", "price_predictor_xgb.pkl")
@@ -109,16 +115,21 @@ async def predict_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     maps_url = f"https://www.google.com/maps/search/?api=1&query={features['latitude']},{features['longitude']}"
     await update.message.reply_text(f"מיקום הדירה במפה: {maps_url}")
 
-        # החזרת הסבר GPT
+    # החזרת הסבר GPT
     explanation = gpt_explanation(features, pred)
     await update.message.reply_text(f"הסבר:\n{explanation}")
+
+    # שמירה לדאטהבייס
+    user_id = str(update.effective_user.id)
+    user_message = msg
+    prediction = f"${pred:,.0f}"
+    gpt_response = explanation
+    save_interaction(user_id, user_message, prediction, gpt_response)
 
 
 
 if __name__ == '__main__':
-    import dotenv
-    dotenv.load_dotenv()  
-
+    
     TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  
     if TOKEN is None:
         print("שים את הטוקן שלך בקובץ .env בצורה TELEGRAM_BOT_TOKEN=xxxx")

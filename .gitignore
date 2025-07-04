@@ -6,3 +6,5 @@ models/
 *.pdf
 *.docx
 *.doc
+~$*
+*.tmp
